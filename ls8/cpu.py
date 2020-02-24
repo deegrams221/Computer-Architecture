@@ -7,7 +7,22 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        # Add list properties to the `CPU` class to hold 256 bytes of memory and 8
+        # general-purpose registers.
+
+        # > Hint: you can make a list of a certain number of zeros with this syntax:
+        # >
+        # > ```python
+        # > x = [0] * 25  # x is a list of 25 zeroes
+        # > ```
+
+        # Also add properties for any internal registers you need, e.g. `PC`.
+
+        # Later on, you might do further initialization here, e.g. setting the initial
+        # value of the stack pointer.
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
 
     def load(self):
         """Load a program into memory."""
