@@ -2,6 +2,13 @@
 
 import sys
 
+# `HLT` instruction handler
+HLT = 1
+# `LDI` instruction handler
+LDI = 130
+# `PRN` instruction handler
+PRN = 71
+
 class CPU:
     """Main CPU class."""
 
@@ -94,4 +101,24 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        # Implement the core of `CPU`'s `run()` method
+
+        # Needs to read the memory address that's stored in register `PC`, and store
+        # that result in `IR`, the _Instruction Register_.
+        # `IR`, contains a copy of the currently executing instruction
+            # LDI
+                # Read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and `operand_b`
+                # store the data
+                # increment the PC by 3 to skip the arguments
+            # PRN
+                # print
+                # increment the PC by 2 to skip the argument
+            # HLT
+            # else, print did not understand
+
+        # Internal Registers
+        # `PC`: Program Counter, address of the currently executing instruction
+        # `IR`: Instruction Register, contains a copy of the currently executing instruction
+        # `MAR`: Memory Address Register, holds the memory address we're reading or writing
+        # `MDR`: Memory Data Register, holds the value to write or the value just read
+        # `FL`: Flags, see below
