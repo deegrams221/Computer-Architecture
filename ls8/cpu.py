@@ -18,11 +18,28 @@ class CPU:
 
         # Also add properties for any internal registers you need, e.g. `PC`.
 
-        # Later on, you might do further initialization here, e.g. setting the initial
-        # value of the stack pointer.
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+
+    # Add RAM functions `ram_read()` and `ram_write()`
+
+    # > Inside the CPU, there are two internal registers used for memory operations:
+    # > the _Memory Address Register_ (MAR) and the _Memory Data Register_ (MDR). The
+    # > MAR contains the address that is being read or written to. The MDR contains
+    # > the data that was read or the data to write. You don't need to add the MAR or
+    # > MDR to your `CPU` class, but they would make handy paramter names for
+    # > `ram_read()` and `ram_write()`
+
+    # `ram_read()` should accept the address to read and return the value stored
+    # there.
+    def ram_read(self, MAR):
+        return self.ram[MAR]
+
+    # `ram_write()` should accept a value to write, and the address to write it to.
+    def ram_write(self, MDR, MAR):
+        self.ram[MAR] = MDR
+
 
     def load(self):
         """Load a program into memory."""
