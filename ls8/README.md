@@ -140,7 +140,7 @@ name instead of by numeric value.
 
 In `run()` in your switch, exit the loop if a `HLT` instruction is encountered,
 regardless of whether or not there are more lines of code in the LS-8 program
-you loaded. 
+you loaded.
 
 We can consider `HLT` to be similar to Python's `exit()` in that we stop
 whatever we are doing, wherever we are.

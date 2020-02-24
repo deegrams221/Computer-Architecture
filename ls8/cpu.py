@@ -102,19 +102,35 @@ class CPU:
     def run(self):
         """Run the CPU."""
         # Implement the core of `CPU`'s `run()` method
-
+        self.load()
         # Needs to read the memory address that's stored in register `PC`, and store
         # that result in `IR`, the _Instruction Register_.
         # `IR`, contains a copy of the currently executing instruction
+        while True:
+            IR = self.ram[self.pc]
             # LDI
+            if IR == LDI:
                 # Read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and `operand_b`
+                operand_a = self.ram[self.pc + 1]
+                operand_b = self.ram[self.pc + 2]
                 # store the data
+                self.reg[operand_a] = operand_b
                 # increment the PC by 3 to skip the arguments
+                self.pc += 3
             # PRN
+            elif IR == PRN:
+                data = self.ram[self.pc + 1]
                 # print
+                print(self.reg[data])
                 # increment the PC by 2 to skip the argument
+                self.pc += 2
             # HLT
+            elif IR == HLT:
+                sys.exit(0)
             # else, print did not understand
+            else:
+                print(f"I did not understand that command: {IR}")
+                sys.exit(1)
 
         # Internal Registers
         # `PC`: Program Counter, address of the currently executing instruction
