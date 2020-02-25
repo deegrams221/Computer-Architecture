@@ -65,6 +65,12 @@ but you'll have to implement those three above instructions first!
 * Read this whole file.
 * Skim the spec.
 
+File List:
+
+* cpu.py
+* ls8.py
+* LS8-spec.md
+
 ## Step 1: Add the constructor to `cpu.py`
 
 Add list properties to the `CPU` class to hold 256 bytes of memory and 8
@@ -134,7 +140,7 @@ name instead of by numeric value.
 
 In `run()` in your switch, exit the loop if a `HLT` instruction is encountered,
 regardless of whether or not there are more lines of code in the LS-8 program
-you loaded. 
+you loaded.
 
 We can consider `HLT` to be similar to Python's `exit()` in that we stop
 whatever we are doing, wherever we are.
