@@ -10,6 +10,8 @@ HLT = 1
 LDI = 130
 # `PRN` instruction handler
 PRN = 71
+# MUL
+MUL = 162
 
 class CPU:
     """Main CPU class."""
@@ -31,6 +33,39 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
 
+
+    # Un-hardcode the machine code
+    def load(self):
+        """Load a program into memory."""
+        # Implement the `load()` function to load an `.ls8` file given the filename passed in as an argument
+        try:
+            filename = sys.argv[1]
+            address = 0
+            # use those command line arguments to open a file
+            with open(filename) as f:
+                # read in its contents line by line
+                for line in f:
+                    # remove any comments
+                    line = line.split("#")[0]
+                    # remove whitespace
+                    line = line.strip()
+                    # skip empty lines
+                    if line == "":
+                        continue
+
+                    value = int(line, 2)
+                    # set the instruction to memory
+                    self.ram[address] = value
+                    address += 1
+
+        except FileNotFoundError:
+            print("File not found")
+            sys.exit(2)
+
+        # for instruction in filename:
+        #     self.ram[address] = instruction
+        #     address += 1
+
     # Add RAM functions `ram_read()` and `ram_write()`
 
     # > Inside the CPU, there are two internal registers used for memory operations:
@@ -48,37 +83,6 @@ class CPU:
     # `ram_write()` should accept a value to write, and the address to write it to.
     def ram_write(self, MDR, MAR):
         self.ram[MAR] = MDR
-
-    # Un-hardcode the machine code
-    def load(self, filename):
-        """Load a program into memory."""
-        # Implement the `load()` function to load an `.ls8` file given the filename passed in as an argument
-        try:
-            address = 0
-            # use those command line arguments to open a file
-            with open(filename) as f:
-                # read in its contents line by line
-                for line in f:
-                    # Parse out comments - ignore comments
-                    comment_split = line.strip().split("#")
-                    # cast numbers from strings to ints
-                    value = comment_split[0].strip()
-                    # ignore blank lines
-                    if value == "":
-                        continue
-                    # save appropriate data into RAM.
-                    num = int(value)
-                    self.ram[address] = num
-                    address += 1
-
-        except FileNotFoundError:
-            print("File not found")
-            sys.exit(2)
-
-        # for instruction in filename:
-        #     self.ram[address] = instruction
-        #     address += 1
-
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -112,12 +116,13 @@ class CPU:
     def run(self):
         """Run the CPU."""
         # Implement the core of `CPU`'s `run()` method
-        self.load(sys.argv[1])
+        self.load()
         # Needs to read the memory address that's stored in register `PC`, and store
         # that result in `IR`, the _Instruction Register_.
         # `IR`, contains a copy of the currently executing instruction
         while True:
             IR = self.ram[self.pc]
+            operand_c = IR >> 6
             # LDI
             if IR == LDI:
                 # Read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and `operand_b`
@@ -126,14 +131,19 @@ class CPU:
                 # store the data
                 self.reg[operand_a] = operand_b
                 # increment the PC by 3 to skip the arguments
-                self.pc += 3
+                # self.pc += 3
             # PRN
             elif IR == PRN:
                 data = self.ram[self.pc + 1]
                 # print
                 print(self.reg[data])
                 # increment the PC by 2 to skip the argument
-                self.pc += 2
+                # self.pc += 2
+            # MUL
+            elif IR == MUL:
+                reg_a = self.ram[self.pc + 1]
+                reg_b = self.ram[self.pc + 2]
+                self.reg[reg_a] *= self.reg[reg_b]
             # HLT
             elif IR == HLT:
                 sys.exit(0)
@@ -141,3 +151,4 @@ class CPU:
             else:
                 print(f"I did not understand that command: {IR}")
                 sys.exit(1)
+            self.pc += operand_c + 1
