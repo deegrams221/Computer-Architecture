@@ -2,6 +2,8 @@
 
 import sys
 
+print(sys.argv)
+
 # `HLT` instruction handler
 HLT = 1
 # `LDI` instruction handler
@@ -47,27 +49,35 @@ class CPU:
     def ram_write(self, MDR, MAR):
         self.ram[MAR] = MDR
 
-
-    def load(self):
+    # Un-hardcode the machine code
+    def load(self, filename):
         """Load a program into memory."""
+        # Implement the `load()` function to load an `.ls8` file given the filename passed in as an argument
+        try:
+            address = 0
+            # use those command line arguments to open a file
+            with open(filename) as f:
+                # read in its contents line by line
+                for line in f:
+                    # Parse out comments - ignore comments
+                    comment_split = line.strip().split("#")
+                    # cast numbers from strings to ints
+                    value = comment_split[0].strip()
+                    # ignore blank lines
+                    if value == "":
+                        continue
+                    # save appropriate data into RAM.
+                    num = int(value)
+                    self.ram[address] = num
+                    address += 1
 
-        address = 0
+        except FileNotFoundError:
+            print("File not found")
+            sys.exit(2)
 
-        # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # for instruction in filename:
+        #     self.ram[address] = instruction
+        #     address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -102,7 +112,7 @@ class CPU:
     def run(self):
         """Run the CPU."""
         # Implement the core of `CPU`'s `run()` method
-        self.load()
+        self.load(sys.argv[1])
         # Needs to read the memory address that's stored in register `PC`, and store
         # that result in `IR`, the _Instruction Register_.
         # `IR`, contains a copy of the currently executing instruction
@@ -131,10 +141,3 @@ class CPU:
             else:
                 print(f"I did not understand that command: {IR}")
                 sys.exit(1)
-
-        # Internal Registers
-        # `PC`: Program Counter, address of the currently executing instruction
-        # `IR`: Instruction Register, contains a copy of the currently executing instruction
-        # `MAR`: Memory Address Register, holds the memory address we're reading or writing
-        # `MDR`: Memory Data Register, holds the value to write or the value just read
-        # `FL`: Flags, see below
