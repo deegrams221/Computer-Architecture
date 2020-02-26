@@ -16,6 +16,8 @@ MUL = 162
 PUSH = 69
 # `POP`
 POP = 70
+# Stack Pointer
+SP = 7
 
 class CPU:
     """Main CPU class."""
@@ -36,9 +38,6 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
-        # Stack Pointer
-        self.sp = 7
-
 
     # Un-hardcode the machine code
     def load(self):
@@ -156,18 +155,18 @@ class CPU:
                 reg = self.ram[self.pc + 1]
                 val = self.reg[reg]
                 # Decrement the SP
-                self.reg[self.sp] -= 1
+                self.reg[SP] -= 1
                 # Copy the value in given reg to the address pointed by SP
-                self.ram[self.reg[self.sp]] = val
+                self.ram[self.reg[SP]] = val
             # POP
             elif IR == POP:
                 # Graph value from top of stack
                 reg = self.ram[self.pc + 1]
-                val = self.ram[self.reg[self.sp]]
+                val = self.ram[self.reg[SP]]
                 # Copy value from address pointed to by SP to given reg
                 self.reg[reg] = val
                 # Increment SP
-                self.reg[self.sp] += 1
+                self.reg[SP] += 1
             # HLT
             elif IR == HLT:
                 sys.exit(0)
