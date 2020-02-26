@@ -10,7 +10,7 @@ HLT = 1
 LDI = 130
 # `PRN` instruction handler
 PRN = 71
-# MUL
+# `MUL`
 MUL = 162
 
 class CPU:
