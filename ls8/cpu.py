@@ -4,11 +4,12 @@ import sys
 
 # print(sys.argv)
 
-# `HLT` instruction handler
+# Instruction Handlers
+# `HLT`
 HLT = 1
-# `LDI` instruction handler
+# `LDI`
 LDI = 130
-# `PRN` instruction handler
+# `PRN`
 PRN = 71
 # `MUL`
 MUL = 162
