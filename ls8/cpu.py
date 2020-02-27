@@ -1,8 +1,4 @@
-"""CPU functionality."""
-
 import sys
-
-# print(sys.argv)
 
 # Instruction Handlers
 # `HLT`
@@ -19,6 +15,13 @@ PUSH = 69
 POP = 70
 # Stack Pointer
 SP = 7
+# `CALL`
+CALL = 80
+# `RET`
+RET = 17
+# `ADD`
+ADD = 160
+
 
 class CPU:
     """Main CPU class."""
@@ -36,8 +39,8 @@ class CPU:
 
         # Also add properties for any internal registers you need, e.g. `PC`.
 
-        self.ram = [0] * 256
         self.reg = [0] * 8
+        self.ram = [0] * 256
         self.pc = 0
 
     # Un-hardcode the machine code
@@ -86,7 +89,7 @@ class CPU:
     def ram_read(self, MAR):
         return self.ram[MAR]
 
-    # `ram_write()` should accept a value to write, and the address to write it to.
+     # `ram_write()` should accept a value to write, and the address to write it to.
     def ram_write(self, MDR, MAR):
         self.ram[MAR] = MDR
 
@@ -95,7 +98,7 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -107,8 +110,8 @@ class CPU:
 
         print(f"TRACE: %02X | %02X %02X %02X |" % (
             self.pc,
-            #self.fl,
-            #self.ie,
+            # self.fl,
+            # self.ie,
             self.ram_read(self.pc),
             self.ram_read(self.pc + 1),
             self.ram_read(self.pc + 2)
@@ -129,6 +132,7 @@ class CPU:
         while True:
             IR = self.ram[self.pc]
             operand_c = IR >> 6
+            sets_pc = IR >> 4 & 0b0001
             # LDI
             if IR == LDI:
                 # Read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and `operand_b`
@@ -149,10 +153,17 @@ class CPU:
             elif IR == MUL:
                 reg_a = self.ram[self.pc + 1]
                 reg_b = self.ram[self.pc + 2]
+                # use `*=` for multiply
                 self.reg[reg_a] *= self.reg[reg_b]
+            # ADD
+            elif IR == ADD:
+                reg_a = self.ram[self.pc + 1]
+                reg_b = self.ram[self.pc + 2]
+                # use `+=` for add
+                self.reg[reg_a] += self.reg[reg_b]
             # PUSH
             elif IR == PUSH:
-                # Grab reg arg
+                 # Grab reg arg
                 reg = self.ram[self.pc + 1]
                 val = self.reg[reg]
                 # Decrement the SP
@@ -168,6 +179,20 @@ class CPU:
                 self.reg[reg] = val
                 # Increment SP
                 self.reg[SP] += 1
+            # `CALL`
+            elif IR == CALL:
+                # Address of instruction directly after CALL is pushed onto stack
+                self.reg[SP] -= 1
+                self.ram[self.reg[SP]] = self.pc + 2
+                # PC is set to address stored in given reg
+                reg = self.ram[self.pc + 1]
+                self.pc = self.reg[reg]
+            # `RET`
+            elif IR == RET:
+                # Return from subroutine
+                # Pop value from top of stack and store it in PC
+                self.pc = self.ram[self.reg[SP]]
+                self.reg[SP] += 1
             # HLT
             elif IR == HLT:
                 sys.exit(0)
@@ -175,4 +200,6 @@ class CPU:
             else:
                 print(f"I did not understand that command: {IR}")
                 sys.exit(1)
-            self.pc += operand_c + 1
+
+            if sets_pc == 0:
+                self.pc += operand_c + 1
