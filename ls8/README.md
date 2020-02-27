@@ -308,7 +308,7 @@ Implement a system stack per the spec. Add `PUSH` and `POP` instructions. Read
   -  Use the stack pointer to modify the correct block of memory. 
   - Make sure you update the stack pointer appropriately as you `PUSH` and `POP` items to and from the stack.
 
-If you run `python3 ls8.py examples/stack.ls8` you should see the output:
+If you run `python ls8.py examples/stack.ls8` you should see the output:
 
 ```
 2

@@ -2,7 +2,7 @@
 
 import sys
 
-print(sys.argv)
+# print(sys.argv)
 
 # `HLT` instruction handler
 HLT = 1
@@ -10,8 +10,14 @@ HLT = 1
 LDI = 130
 # `PRN` instruction handler
 PRN = 71
-# MUL
+# `MUL`
 MUL = 162
+# `PUSH`
+PUSH = 69
+# `POP`
+POP = 70
+# Stack Pointer
+SP = 7
 
 class CPU:
     """Main CPU class."""
@@ -32,7 +38,6 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
-
 
     # Un-hardcode the machine code
     def load(self):
@@ -144,6 +149,24 @@ class CPU:
                 reg_a = self.ram[self.pc + 1]
                 reg_b = self.ram[self.pc + 2]
                 self.reg[reg_a] *= self.reg[reg_b]
+            # PUSH
+            elif IR == PUSH:
+                # Grab reg arg
+                reg = self.ram[self.pc + 1]
+                val = self.reg[reg]
+                # Decrement the SP
+                self.reg[SP] -= 1
+                # Copy the value in given reg to the address pointed by SP
+                self.ram[self.reg[SP]] = val
+            # POP
+            elif IR == POP:
+                # Graph value from top of stack
+                reg = self.ram[self.pc + 1]
+                val = self.ram[self.reg[SP]]
+                # Copy value from address pointed to by SP to given reg
+                self.reg[reg] = val
+                # Increment SP
+                self.reg[SP] += 1
             # HLT
             elif IR == HLT:
                 sys.exit(0)
