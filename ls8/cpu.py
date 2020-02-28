@@ -1,26 +1,36 @@
 import sys
 
-# Instruction Handlers
-# `HLT`
+# Instruction Handlers (Constant)
+# `HLT` 0b00000001
 HLT = 1
-# `LDI`
+# `LDI` 0b10000010
 LDI = 130
-# `PRN`
+# `PRN` 0b01000111
 PRN = 71
-# `MUL`
+# `MUL` 0b10100010
 MUL = 162
-# `PUSH`
+# `PUSH` 0b01000101
 PUSH = 69
-# `POP`
+# `POP` 0b01000110
 POP = 70
-# Stack Pointer
+# Stack Pointer 0b00000111
 SP = 7
-# `CALL`
+# `CALL` 0b01010000
 CALL = 80
-# `RET`
+# `RET` 0b00010001
 RET = 17
-# `ADD`
+# `ADD`0b10100000
 ADD = 160
+
+# Sprint Challenge
+# `CMP` 0b10100111
+CMP = 167
+# `JMP` 0b01010100
+JMP = 84
+# `JEQ` 0b01010101
+JEQ = 85
+# `JNE` 0b01010110
+JNE = 86
 
 
 class CPU:
@@ -42,6 +52,10 @@ class CPU:
         self.reg = [0] * 8
         self.ram = [0] * 256
         self.pc = 0
+        # Sprint Challenge
+        self.less = 0
+        self.greater = 0
+        self.equal = 0
 
     # Un-hardcode the machine code
     def load(self):
@@ -62,6 +76,7 @@ class CPU:
                     if line == "":
                         continue
 
+                    # set value to number, base 2
                     value = int(line, 2)
                     # set the instruction to memory
                     self.ram[address] = value
@@ -95,10 +110,27 @@ class CPU:
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
+        # ADD
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         # elif op == "SUB": etc
+        # MUL
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+
+        # Sprint Challenge
+        # CMP - compare
+        elif op == "CMP":
+            # check if greater than
+            if self.reg[reg_a] > self.reg[reg_b]:
+                self.greater = 1
+            # check if less than
+            elif self.reg[reg_a] < self.reg[reg_b]:
+                self.less = 1
+                # check if equal to
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.equal = 1
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -130,38 +162,40 @@ class CPU:
         # that result in `IR`, the _Instruction Register_.
         # `IR`, contains a copy of the currently executing instruction
         while True:
+            # set the Instruction Register
             IR = self.ram[self.pc]
+            # Read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and `operand_b`
+            operand_a = self.ram[self.pc + 1]
+            operand_b = self.ram[self.pc + 2]
             operand_c = IR >> 6
             sets_pc = IR >> 4 & 0b0001
-            # LDI
+
+            # `LDI` sets a specified register to a specified value
             if IR == LDI:
-                # Read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and `operand_b`
-                operand_a = self.ram[self.pc + 1]
-                operand_b = self.ram[self.pc + 2]
                 # store the data
                 self.reg[operand_a] = operand_b
                 # increment the PC by 3 to skip the arguments
                 # self.pc += 3
-            # PRN
+            # `PRN` print - has similar process to adding LDI, but handler is simpler
             elif IR == PRN:
-                data = self.ram[self.pc + 1]
-                # print
-                print(self.reg[data])
+                data = self.reg[operand_a]
+                # print the reg at that place
+                print(data)
                 # increment the PC by 2 to skip the argument
                 # self.pc += 2
-            # MUL
+            # `MUL` multiply
             elif IR == MUL:
                 reg_a = self.ram[self.pc + 1]
                 reg_b = self.ram[self.pc + 2]
                 # use `*=` for multiply
                 self.reg[reg_a] *= self.reg[reg_b]
-            # ADD
+            # `ADD`
             elif IR == ADD:
                 reg_a = self.ram[self.pc + 1]
                 reg_b = self.ram[self.pc + 2]
                 # use `+=` for add
                 self.reg[reg_a] += self.reg[reg_b]
-            # PUSH
+            # `PUSH`
             elif IR == PUSH:
                  # Grab reg arg
                 reg = self.ram[self.pc + 1]
@@ -170,7 +204,7 @@ class CPU:
                 self.reg[SP] -= 1
                 # Copy the value in given reg to the address pointed by SP
                 self.ram[self.reg[SP]] = val
-            # POP
+            # `POP`
             elif IR == POP:
                 # Graph value from top of stack
                 reg = self.ram[self.pc + 1]
@@ -179,7 +213,7 @@ class CPU:
                 self.reg[reg] = val
                 # Increment SP
                 self.reg[SP] += 1
-            # `CALL`
+            # `CALL` will push address of instruction after it on stack, move PC to subroutine address
             elif IR == CALL:
                 # Address of instruction directly after CALL is pushed onto stack
                 self.reg[SP] -= 1
@@ -187,13 +221,37 @@ class CPU:
                 # PC is set to address stored in given reg
                 reg = self.ram[self.pc + 1]
                 self.pc = self.reg[reg]
-            # `RET`
+            # `RET` will pop return address off stack, and store it in PC
             elif IR == RET:
                 # Return from subroutine
                 # Pop value from top of stack and store it in PC
                 self.pc = self.ram[self.reg[SP]]
                 self.reg[SP] += 1
-            # HLT
+
+            # Sprint Challenge
+            # `CMP` compare
+            elif IR == CMP:
+                self.alu("CMP", operand_a, operand_b)
+                # self.pc += 3
+            # `JMP` jump specifies an offset from current address, so it uses
+            # address of currently processed instruction as part of calculation
+            elif IR == JMP:
+                # jump to an address
+                self.pc = self.reg[operand_a]
+            # `JEQ` jump if equal
+            elif IR == JEQ:
+                if self.equal is 1:
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
+            # `JNE` jump if not equal
+            elif IR == JNE:
+                if self.equal is 0:
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
+
+            # `HLT`
             elif IR == HLT:
                 sys.exit(0)
             # else, print did not understand
